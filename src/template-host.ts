@@ -27,8 +27,8 @@ export type MgComponent = React.FC<{ item: MgItem }>;
 
 // Scraped templates often carry a DANGLING bgImage — a bare asset id like
 // "04ff45a7b0" (not a URL). In the browser Player that just 404s harmlessly, but
-// under headless render Remotion's <Img> waits on delayRender() until it times // impeccable-disable-line broken-image -- Remotion <Img> mentioned in comments, not a real tag
-// out (fatal). So: only render an <Img> when the src is a genuinely loadable URL
+// under headless render Remotion's <Img> waits on delayRender() until it times out (fatal).
+// So: only render an <Img> when the src is a genuinely loadable URL
 // (http/https/data/blob or a root path); otherwise render nothing. For a real
 // URL that still fails, onError makes Remotion swallow it instead of throwing.
 const isLoadableSrc = (src: unknown): boolean =>
@@ -130,16 +130,21 @@ export function validateTemplate(code: string): void {
 const cache = new Map<string, MgComponent>();
 const pending = new Map<string, Promise<MgComponent>>();
 
-// AFTER (Safe regex matching that satisfies TypeScript):
 function templateName(code: string): string {
-  const itemSignature = code.match(
-    /const\s+([A-Za-z_$][\w$]*)\s*=\s*(?:async\s*)?\(\s*\{[^)}]*\bitem\b[^)}]*\}/,
-  );
-  const fallback = code.match(/const\s+([A-Za-z_$][\w$]*)\s*=\s*(?:\(|async\b|function)/);
+  if (!code) throw new Error('template: 代码为空');
+
+  const itemRegex = /const\s+([A-Za-z_$][\w$]*)\s*=\s*(?:async\s*)?\(\s*\{[^)}]*\bitem\b[^)}]*\}/;
+  const fallbackRegex = /const\s+([A-Za-z_$][\w$]*)\s*=\s*(?:\(|async\b|function)/;
+
+  const itemSignature = itemRegex.exec(code);
+  const fallback = fallbackRegex.exec(code);
+
   const match = itemSignature || fallback;
-  const name = match ? match[1] : undefined;
-  if (!name) throw new Error('template: 找不到 `const NAME = (...)` 声明');
-  return name;
+  if (!match || !match[1]) {
+    throw new Error('template: 找不到 `const NAME = (...)` 声明');
+  }
+
+  return match[1];
 }
 
 function evaluateTemplate(transpiled: string, name: string): MgComponent {
