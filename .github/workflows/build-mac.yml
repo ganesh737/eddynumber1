@@ -9,20 +9,20 @@ on:
 
 jobs:
   build-mac:
-    runs-on: macos-latest
+    runs-on: macos-14 # Guarantees Apple Silicon (M-series) runner
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v6 # Updated to avoid Node.js 20 deprecation warning
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6 # Updated to avoid Node.js 20 deprecation warning
+        uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 22
           cache: 'npm'
 
       - name: Install Dependencies
-        run: npm ci
+        run: npm install
 
       - name: Sync Shader Sources
         run: node scripts/sync-shader-sources.mjs
