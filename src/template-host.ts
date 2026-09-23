@@ -159,12 +159,12 @@ async function compileUncached(code: string): Promise<MgComponent> {
   const name = templateName(code);
   // Compiler boundary: user/plugin JSX is the only path allowed to load Babel.
   const Babel = await import('@babel/standalone');
-  const output = Babel.transform(code, {
+  const result = Babel.transform(code, {
     presets: [['react', { runtime: 'classic' }]],
     filename: 'template.jsx',
-  }).code;
-  if (!output) throw new Error('template: babel 无输出');
-  return evaluateTemplate(output, name);
+  });
+  if (!result || !result.code) throw new Error('template: babel 无输出');
+  return evaluateTemplate(result.code, name);
 }
 
 /** Validate, compile, and cache one code-backed template before it can render. */

@@ -9,7 +9,7 @@ on:
 
 jobs:
   build-mac:
-    runs-on: macos-14 # Guarantees Apple Silicon (M-series) runner
+    runs-on: macos-14
 
     steps:
       - name: Check out repository
@@ -24,11 +24,16 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Sync Shader Sources
-        run: node scripts/sync-shader-sources.mjs
+      - name: Sync Shader Sources (If script exists)
+        run: |
+          if [ -f "scripts/sync-shader-sources.mjs" ]; then
+            node scripts/sync-shader-sources.mjs
+          else
+            echo "sync-shader-sources.mjs not found, skipping..."
+          fi
 
       - name: Build macOS App
-        run: npm run desktop:dist
+        run: npx vite build --config config/vite.config.ts && npx electron-builder --mac
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
