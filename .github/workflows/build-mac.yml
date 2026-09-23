@@ -28,17 +28,11 @@ jobs:
           path: public/whisper-cli/darwin-arm64
           key: whisper-cli-darwin-arm64-${{ hashFiles('package-lock.json') }}
 
-      - name: Cache Electron Builder Cache
-        uses: actions/cache@v4
-        with:
-          path: ~/Library/Caches/electron-builder
-          key: electron-builder-mac-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-
       - name: Install Dependencies
         run: npm install
 
-      - name: Clear corrupted electron-builder cache if needed
-        run: rm -rf ~/Library/Caches/electron-builder/dmg-builder*
+      - name: Remove problematic dmgbuild cache
+        run: rm -rf ~/Library/Caches/electron-builder
 
       - name: Sync Shader Sources (If script exists)
         run: |
@@ -53,12 +47,14 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CSC_IDENTITY_AUTO_DISCOVERY: false
-          USE_HARD_LINKS: false
+          ELECTRON_BUILDER_ALLOW_UNRESOLVED_DEPENDENCIES: true
+          ELECTRON_BUILDER_CACHE: ${{ runner.temp }}/electron-builder-cache
 
-      - name: Upload Mac DMG Artifact
+      - name: Upload Mac Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: macOS-Installer
           path: |
             dist/*.dmg
             dist/*.zip
+            dist/*.pkg
