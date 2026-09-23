@@ -21,11 +21,24 @@ jobs:
           node-version: 22
           cache: 'npm'
 
+      - name: Cache Whisper CLI Binaries
+        id: cache-whisper
+        uses: actions/cache@v4
+        with:
+          path: public/whisper-cli/darwin-arm64
+          key: whisper-cli-darwin-arm64-${{ hashFiles('package-lock.json') }}
+
+      - name: Cache Electron Builder Cache
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Caches/electron-builder
+          key: electron-builder-mac-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
       - name: Install Dependencies
         run: npm install
 
-      - name: Clear corrupted electron-builder cache
-        run: rm -rf ~/Library/Caches/electron-builder
+      - name: Clear corrupted electron-builder cache if needed
+        run: rm -rf ~/Library/Caches/electron-builder/dmg-builder*
 
       - name: Sync Shader Sources (If script exists)
         run: |
