@@ -33,9 +33,10 @@ jobs:
           fi
 
       - name: Build macOS App
-        run: npx vite build --config config/vite.config.ts && npx electron-builder --mac
+        run: npm run desktop:dist
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_IDENTITY_AUTO_DISCOVERY: false
 
       - name: Upload Mac DMG Artifact
         uses: actions/upload-artifact@v4
