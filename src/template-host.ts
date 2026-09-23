@@ -130,12 +130,14 @@ export function validateTemplate(code: string): void {
 const cache = new Map<string, MgComponent>();
 const pending = new Map<string, Promise<MgComponent>>();
 
+// AFTER (Safe regex matching that satisfies TypeScript):
 function templateName(code: string): string {
   const itemSignature = code.match(
     /const\s+([A-Za-z_$][\w$]*)\s*=\s*(?:async\s*)?\(\s*\{[^)}]*\bitem\b[^)}]*\}/,
   );
   const fallback = code.match(/const\s+([A-Za-z_$][\w$]*)\s*=\s*(?:\(|async\b|function)/);
-  const name = (itemSignature ?? fallback)?.[1];
+  const match = itemSignature || fallback;
+  const name = match ? match[1] : undefined;
   if (!name) throw new Error('template: 找不到 `const NAME = (...)` 声明');
   return name;
 }
